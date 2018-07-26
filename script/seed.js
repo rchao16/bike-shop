@@ -1,8 +1,9 @@
 'use strict'
 
 const db = require('../server/db')
-const { User } = require('../server/db/models')
-const { Bike, BikeImage, CategoryKey, CategoryValue } = require('../server/db/models/bike')
+const { User, Order , OrderEntry, Bike, BikeImage, CategoryKey, CategoryValue} = require('../server/db/models')
+//const { Bike, BikeImage, CategoryKey, CategoryValue } = require('../server/db/models/bike')
+
 
 
 // library to generate fake data
@@ -21,9 +22,56 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max)
 }
 
+const orders = [{
+  userId: 1,
+  state: 'completed',
+  date: new Date(),
+  shippingEmail: 'cody@email.com', 
+  shippingName: 'cody jones',
+  shippingAddress: '123 Meadow Lane',
+  shippingCity: 'Chicago',
+  shippingState: 'IL',
+  shippingZip: 60606,
+  orderCost: 200,
+},
+{
+  userId: 1,
+  state: 'processing',
+  date: new Date(),
+  shippingEmail: 'cody@email.com', 
+  shippingName: 'cody jones',
+  shippingAddress: '123 Meadow Lane',
+  shippingCity: 'Chicago',
+  shippingState: 'IL',
+  shippingZip: 60606,
+  orderCost: 200,
+}]
+const orderEntry = [
+  {orderId: 1,
+    bikeId: 1,
+    quantity: 1,
+    price:200
+  },
+  {orderId: 1,
+    bikeId: 2,
+    quantity: 6,
+    price:500
+  },
+  {orderId: 2,
+    bikeId: 1,
+    quantity: 1,
+    price:200
+  },
+  {orderId: 2,
+    bikeId: 2,
+    quantity: 6,
+    price:500
+  },
+]
 
 async function seed() {
-  await db.sync({force: true})
+  try {
+    await db.sync({force: true})
   console.log('db synced!')
 
   const users = await Promise.all([
@@ -32,7 +80,10 @@ async function seed() {
     User.create({email: 'murphy@email.com', password: '123'})
   ])
 
-  try {
+  await Promise.all(orders.map(order => Order.create(order)));
+  await Promise.all(orderEntry.map(entry => OrderEntry.create(entry)));
+
+   //make some orders 
     // set up the CategoryKey's
     const brand = await CategoryKey.create({ name: 'brand' })  // id: 1
     const color = await CategoryKey.create({ name: 'color' })  // id: 2
@@ -70,10 +121,6 @@ async function seed() {
       useCases.push(dataValues)
     }
 
-    // console.log('magic methods for brand: ', Object.keys(brand.__proto__))
-    // console.log('magic methods for color: ',Object.keys( color.__proto__))
-    // console.log('magic methods for useCase: ', Object.keys( useCase.__proto__))
-
     // add some bikes
     for (let i=0; i<51; i++) {
       const bike = await Bike.create({
@@ -88,7 +135,6 @@ async function seed() {
       const addedBrand = await bike.addCategoryvalue(brands[getRandomInt(brands.length-1)].id)
       const addedColors = await bike.addCategoryvalue(colors[getRandomInt(colors.length-1)].id)
       const addedUseCases = await bike.addCategoryvalue(useCases[getRandomInt(useCases.length-1)].id)
-
 
       // create some images for the bike
       for (let j=0; j<getRandomInt(7); j++) {
