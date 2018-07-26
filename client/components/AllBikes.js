@@ -16,7 +16,7 @@ import {Link} from 'react-router-dom'
 
 const styles = theme => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1, 
   },
   card: {
     width: 300,
@@ -43,10 +43,10 @@ class AllBikes extends Component {
 
     return (
       <div className={classes.root}>
-        <Grid container>
+        <Grid  container spacing={24}>
           {this.props.bikes.map(elem => {
             return (
-              <Grid spacing={24} key={elem.id}>
+              <Grid key={elem.id}>
                 <Card className={classes.card}>
                   <CardMedia
                     component={Link}
